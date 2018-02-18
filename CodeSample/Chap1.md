@@ -220,3 +220,38 @@ callback or a continuation) and use it to perform a task or to compute a value. 
 the most common pattern for HOFs, and it’s sometimes referred to as inversion of control: the
 caller of the HOF decides what to do by supplying a function, and the callee decides when to do
 it by invoking the given function.
+
+### 1.4.2. Adapter functions
+
+Some HOFs don’t apply the given function at all, but rather return a new function, somehow
+related to the function given as an argument. For example, say you have a function that performs
+integer division:
+
+> Example
+
+```csharp
+Func<int, int, int> divide = (x, y) => x / y;
+divide(10, 2) // => 5
+```
+
+You can write a generic HOF that modifies any binary function by swapping the order of its
+arguments:
+
+> Example
+
+```csharp
+static Func<T2, T1, R> SwapArgs<T1, T2, R>(this Func<T1, T2, R> f)
+=> (t2, t1) => f(t1, t2);
+```
+
+Technically, it would be more correct to say that SwapArgs returns a new function that invokes the
+given function with the arguments in the reverse order. But on an intuitive level, I find it easier to
+think that I’m getting back a modified version of the original function.
+You can now modify the original division function by applying SwapArgs:
+
+> Example
+
+```csharp
+var divideBy = divide.SwapArgs();
+divideBy(2, 10) // => 5
+```
