@@ -111,3 +111,83 @@ Enumerable.Range(1, 10).Where(i => i % 3 == 0) // => [3, 6, 9]
 ```csharp
 Enumerable.Range(1, 5).OrderBy(i => -i) // => [5, 4, 3, 2, 1]
 ```
+
+## 1.3. Thinking in functions
+
+### 1.3.2. Representing functions in C
+
+There are several language constructs in C# that you can use to represent functions:
+
+* Methods
+* Delegates
+* Lambda expressions
+* Dictionaries
+
+#### Methods
+
+Methods are the most common and idiomatic representation for functions in C#. For example,
+the `System.Math` class includes methods representing many common mathematical functions.
+Methods can represent functions, but they also fit into the object-oriented paradigm—they can be
+used to implement interfaces, they can be overloaded, and so on.
+
+The constructs that really enable you to program in a functional style are delegates and lambda
+expressions.
+
+#### Delegates
+
+Delegates are type-safe function pointers. Type-safe here means that a delegate is strongly typed:
+the types of the input and output values of the function are known at compile time, and
+consistency is enforced by the compiler.
+
+Creating a delegate is a two-step process: you first declare the delegate type and then provide an
+implementation. (This is analogous to writing an interface and then instantiating a class
+implementing that interface.)
+
+The first step is done by using the delegate keyword and providing the signature for the delegate.
+For example, .NET includes the following definition of a `Comparison<T>` delegate.
+
+#### The Func and Action delegates
+
+The .NET framework includes a couple of delegate “families” that can represent pretty much any
+function type:
+
+* `Func<R>` represents a function that takes no arguments and returns a result of type R.
+* `Func<T1, R>` represents a function that takes an argument of type T1 and returns a result of
+  type R.
+* `Func<T1, T2, R>` represents a function that takes a T1 and a T2 and returns an R.
+
+Since the introduction of `Func`, it has become rare to use custom delegates. For example, instead
+of declaring a custom delegate like this,
+`delegate Greeting Greeter(Person p);`
+
+you can just use the type:
+
+`Func<Person, Greeting>`
+
+The type of Greeter in the preceding example is equivalent to, or “compatible with” `Func<Person, Greeting>`. In both cases it’s a function that takes a Person and returns a Greeting.
+
+There’s a similar delegate family to represent actions—functions that have no return value, such
+as void methods:
+
+* `Action` represents an action with no input arguments.
+* `Action<T1>` represents an action with an input argument of type T1.
+* `Action<T1, T2>` and so on represent an action with several input arguments.
+
+#### Lambda expressions
+
+`Lambda expressions`, called `lambdas` for short, are used to declare a function inline. For example,
+sorting a list of numbers alphabetically can be done with a lambda like so.
+
+> Example Declaring a function inline with a lambda
+
+```csharp
+var list = Enumerable.Range(1, 10).Select(i => i * 3).ToList();
+list // => [3, 6, 9, 12, 15, 18, 21, 24, 27, 30]
+list.Sort((l, r) => l.ToString().CompareTo(r.ToString()));
+list // => [12, 15, 18, 21, 24, 27, 3, 30, 6, 9]
+```
+
+If your function is short and you don’t need to reuse it elsewhere, lambdas offer the most
+attractive notation. Also notice that in the preceding example, the compiler not only infers the
+types of x and y to be int, it also converts the lambda to the delegate type `Comparison<int>`
+expected by the Sort method, given that the provided lambda is compatible with this type.
