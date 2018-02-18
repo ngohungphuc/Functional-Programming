@@ -84,3 +84,30 @@ Select(i => $"{i}%")
 
 Notice how `Where`, `OrderBy`, and `Select` all take functions as arguments and don’t mutate the given
 `IEnumerable`, but return a new `IEnumerable` instead
+
+**Common operations on sequences**
+
+The LINQ library contains many methods for performing common operations on sequences, such
+as the following:
+
+* `Mapping` — Given a sequence and a function, mapping yields a new sequence with the
+  elements obtained by applying the given function to each element in the given sequence
+  (in LINQ, this is done with the Select method).
+
+```csharp
+Enumerable.Range(1, 3).Select(i => i * 3) // => [3, 6, 9]
+```
+
+* `Filtering` — Given a sequence and a predicate, filtering yields a new sequence consisting
+  of the elements from the given sequence that pass the predicate (in LINQ, Where).
+
+```csharp
+Enumerable.Range(1, 10).Where(i => i % 3 == 0) // => [3, 6, 9]
+```
+
+* `Sorting` — Given a sequence and a key-selector function, sorting yields a new sequence
+  ordered according to the key (in LINQ, OrderBy and OrderByDescending).
+
+```csharp
+Enumerable.Range(1, 5).OrderBy(i => -i) // => [5, 4, 3, 2, 1]
+```
