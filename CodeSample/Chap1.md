@@ -191,3 +191,32 @@ If your function is short and you don’t need to reuse it elsewhere, lambdas of
 attractive notation. Also notice that in the preceding example, the compiler not only infers the
 types of x and y to be int, it also converts the lambda to the delegate type `Comparison<int>`
 expected by the Sort method, given that the provided lambda is compatible with this type.
+
+## 1.4. Higher-order functions
+
+HOFs are functions that take other functions as inputs or return a function as output, or both.
+
+### 1.4.1. Functions that depend on other functions
+
+Some HOFs take other functions as arguments and invoke them in order to do their work
+
+`List.Sort`, when called with a `Comparison` delegate, is a method that says: “OK, I’ll sort myself, as
+long as you tell me how to compare any two elements that I contain.” Sort does the job of
+sorting, but the caller can decide what logic to use for comparing.
+
+> Example A HOF that optionally invokes the given function
+
+```csharp
+class Cache<T> where T : class
+{
+public T Get(Guid id) => //...
+public T Get(Guid id, Func<T> onMiss)
+=> Get(id) ?? onMiss();
+}
+```
+
+The preceding examples illustrate HOFs that take a function as input (often referred to as a
+callback or a continuation) and use it to perform a task or to compute a value. This is perhaps
+the most common pattern for HOFs, and it’s sometimes referred to as inversion of control: the
+caller of the HOF decides what to do by supplying a function, and the callee decides when to do
+it by invoking the given function.
