@@ -255,3 +255,95 @@ You can now modify the original division function by applying SwapArgs:
 var divideBy = divide.SwapArgs();
 divideBy(2, 10) // => 5
 ```
+
+### 1.4.3. Functions that create other functions
+
+Sometimes you’ll write functions whose primary purpose is to create other functions—you can
+think of them as function factories. The following example uses a lambda to filter a sequence of
+numbers, keeping only those divisible by 2:
+
+> Example
+
+```csharp
+var range = Enumerable.Range(1, 20);
+range.Where(i => i % 2 == 0)
+// => [2, 4, 6, 8, 10, 12, 14, 16, 18, 20]
+```
+
+What if you wanted something more general, like being able to filter for numbers divisible by
+any number, n? You could define a function that takes n and yields a suitable predicate that will
+evaluate whether any given number is divisible by n:
+
+> Example
+
+```csharp
+Func<int, bool> isMod(int n) => i => i % n == 0;
+```
+
+## 1.5. Using HOFs to avoid duplication
+
+### 1.5.1. Encapsulating setup and teardown into a HOF
+
+> Example
+
+```csharp
+using Dapper;
+using static ConnectionHelper;
+public class DbLogger
+{
+string connString;
+public void Log(LogMessage message)
+=> Connect(connString, c => c.Execute("sp_create_log"
+, message, commandType: CommandType.StoredProcedure));
+
+public IEnumerable<LogMessage> GetLogs(DateTime since)
+=> Connect(connString, c => c.Query<LogMessage>(@"SELECT *
+FROM [Logs] WHERE [Timestamp] > @since", new {since = since}));
+}
+```
+
+### 1.5.2. Turning the using statement into a HOF
+
+### 1.5.3. Tradeoffs of HOFs
+
+```csharp
+// initial implementation
+public void Log(LogMessage msg)
+{
+    using (var conn = new SqlConnection(connString))
+    {
+        int affectedRows = conn.Execute("sp_create_log"
+        , msg, commandType: CommandType.StoredProcedure);
+    }
+}
+
+// refactored implementation
+public void Log(LogMessage message)
+=> Connect(connString, c => c.Execute("sp_create_log"
+, message, commandType: CommandType.StoredProcedure));
+(
+```
+
+This is a good illustration of the benefits you can get from using HOFs that take a function as an
+argument:
+
+* `Conciseness—` The new version is obviously more concise. Generally speaking, the more
+  intricate the setup/teardown and the more widely it’s required, the more benefit you get by
+  abstracting it into a HOF.
+* `Avoid duplication`— The whole setup/teardown logic is now performed in a single place.
+* `Separation of concerns`— You’ve managed to isolate connection management into the
+  ConnectionHelper class, so DbLogger need only concern itself with logging-specific logic.
+
+## 1.6. Benefits of functional programming
+
+* `Cleaner code`— Apart from the previously mentioned conciseness, FP leads to more
+  expressive, more readable, and more easily testable code. Clean code is not just a
+  developer’s intellectual pleasure, but it also leads to huge economic benefits for the
+  business through reduced maintenance costs.
+* `Better support for concurrency`— Several factors, from multi-core CPUs to distributed
+  systems, bring a high degree of concurrency to your applications. Concurrency is
+  traditionally associated with difficult problems such as deadlocks, lost updates, and more;
+  FP offers techniques that prevent these problems from occurring.
+* `A multi-paradigm approach`— They say that if the only tool you have is a hammer, every
+  problem will look like a nail. Conversely, the more angles from which you can view a
+  given problem, the more likely it is that you’ll find an optimal solution.
