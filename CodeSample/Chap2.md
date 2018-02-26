@@ -180,3 +180,41 @@ There are several scenarios in which concurrency can occur:
   same time even when it’s running on a single-core machine. This is a bit like chatting with
   different people through various IM windows; although you’re actually switching back
   and forth, the net result is that you’re having multiple conversations at the same time.
+
+### 2.2.2. Parallelizing impure functions
+
+### 2.2.3. Avoiding state mutation
+
+One possible way to avoid the pitfalls of concurrent updates is to remove the problem at the
+source: **don’t use shared state to begin with**.
+
+The operation of pairing two parallel lists is a common operation in FP, and it’s called Zip.
+Here’s an example.
+
+```cs
+Enumerable.Zip(
+new[] {1, 2, 3},
+new[] {"ichi", "ni", "san"},
+(number, name) => $"In Japanese, {number} is: {name}")
+// => ["In Japanese, 1 is: ichi",
+// "In Japanese, 2 is: ni",
+// "In Japanese, 3 is: san"]
+```
+
+#### The case for static methods
+
+When all variables required within a method are provided as input (or are statically available),
+the method can be made static. This chapter contains several examples of refactoring instance
+methods to static methods.
+
+Static methods can cause problems if they do either of the following:
+
+* **Act on mutable static fields**— These are effectively the most global variables, and it’s well
+  known that maintainability suffers from the presence of global mutable variables.
+* **Perform I/O**— In this case, it’s testability that’s jeopardized. If method A depends on the
+  I/O behavior of static method B, it’s not possible to unit test A.
+  Note that both these cases imply an impure function. On the other hand, when a function is pure,
+  there’s no downside to making it static. As a general guideline:
+* Make pure functions static.
+* Avoid mutable static fields.
+* Avoid direct calls to static methods that perform I/O.
