@@ -70,3 +70,43 @@ extracted in a pure function:
 ```cs
 static string GreetingFor(string name) => $"Hello {name}";
 ```
+
+#### Avoid mutating arguments
+
+Another kind of side effect is the mutation of function arguments. Mutating function arguments
+is a bad idea in any programming paradigm
+
+Consider the following code:
+
+```cs
+decimal RecomputeTotal(Order order, List<OrderLine> linesToDelete)
+{
+    var result = 0m;
+    foreach (var line in order.OrderLines)
+    {
+        if (line.Quantity == 0) linesToDelete.Add(line);
+        else result += line.Product.Price * line.Quantity;
+    }
+
+    return result;
+}
+```
+
+The behavior of the method is now tightly
+coupled with that of the caller: the caller relies on the method to perform its side effect, and the
+callee relies on the caller to initialize the list. As such, both methods must be aware of the
+implementation details of the other, making it impossible to reason about the methods in
+isolation.
+
+This kind of side effect can easily be avoided by returning all the computed information to the
+caller instead. For example, the preceding code can be refactored as follows:
+
+```cs
+(decimal, IEnumerable<OrderLine>) RecomputeTotal(Order order)
+=> (order.OrderLines.Sum(l => l.Product.Price * l.Quantity)
+, order.OrderLines.Where(l => l.Quantity == 0));
+```
+
+Following this principle, you can always structure your code in such a way that functions never
+mutate their input arguments. In fact, it would be ideal to enforce this by always using immutable
+objects—objects that, once created, cannot be changed.
