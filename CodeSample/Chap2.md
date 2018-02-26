@@ -140,3 +140,43 @@ There are a few things to point out with respect to purity:
 * In the `Format` method, you apply both functions to items in the list with Select, irrespective
   of purity. In fact, there would ideally be a rule that
   Select should only be used with pure functions.
+
+### 2.2.1. Pure functions parallelize well
+
+Given a big enough set of data to process, it’s usually advantageous to process it in parallel,
+especially when the processing is CPU-intensive and the pieces of data can be processed
+independently.
+
+Compare these two expressions:
+
+```cs
+list.Select(ToSentenceCase).ToList()
+list.AsParallel().Select(ToSentenceCase).ToList()
+```
+
+The first expression uses the `Select` method defined on Enumerable to apply the pure function
+`ToSentenceCase` to each element in the list. The second expression is very similar, but it uses
+methods provided by Parallel LINQ (PLINQ). `AsParallel` turns the list into a ParallelQuery. As
+a result, `Select` resolves to the implementation defined on ParallelEnumerable, which will apply
+`ToSentenceCase` to each item in the list, but now in parallel. The list will be split into chunks, and
+several threads will be fired off to process each chunk. In both cases, `ToList` harvests the results
+into a list.
+
+Concurrency is the general concept of having several things going on at the same time. More
+formally, concurrency is when a program initiates a task before another one has completed, so
+that different tasks are executed in overlapping time windows.
+There are several scenarios in which concurrency can occur:
+
+* **Asynchrony**— This means that your program performs non-blocking operations. For
+  example, it can initiate a request for a remote resource via HTTP and then go on to do
+  some other task while it waits for the response to be received. It’s a bit like when you send
+  an email and then go on with your life without waiting for a response.
+* **Parallelism**— This means that your program leverages the hardware of multi-core
+  machines to execute tasks at the same time by breaking up work into tasks, each of which
+  is executed on a separate core. It’s a bit like singing in the shower: you’re actually doing
+  two things at exactly the same time.
+* **Multithreading**— This is a software implementation allowing different threads to be
+  executed concurrently. A multithreaded program appears to be doing several things at the
+  same time even when it’s running on a single-core machine. This is a bit like chatting with
+  different people through various IM windows; although you’re actually switching back
+  and forth, the net result is that you’re having multiple conversations at the same time.
