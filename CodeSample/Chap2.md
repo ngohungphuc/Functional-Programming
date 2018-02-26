@@ -110,3 +110,33 @@ caller instead. For example, the preceding code can be refactored as follows:
 Following this principle, you can always structure your code in such a way that functions never
 mutate their input arguments. In fact, it would be ideal to enforce this by always using immutable
 objects—objects that, once created, cannot be changed.
+
+## 2.2. What is function purity?
+
+Imagine you want to format a list of strings as a numbered list; the casing
+should be standardized, and each item should be preceded with a counter
+
+```cs
+var shoppingList = new List<string> { "coffee beans", "BANANAS", "Dates" };
+new ListFormatter()
+.Format(shoppingList)
+.ForEach(WriteLine);
+// prints: 1. Coffee beans
+// 2. Bananas
+// 3. Dates
+```
+
+Soulution
+
+<img src="../img/AcroRd32_2018-02-26_23-18-53.png"/>
+
+There are a few things to point out with respect to purity:
+
+* `ToSentenceCase` is pure (its output is strictly determined by the input). Because its
+  computation only depends on the input parameter, it can be made static without any
+  problems.
+* `PrependCounter` increments the counter, so it’s impure. Because it depends on an instance
+  member—the counter—you can’t make it static.
+* In the `Format` method, you apply both functions to items in the list with Select, irrespective
+  of purity. In fact, there would ideally be a rule that
+  Select should only be used with pure functions.
